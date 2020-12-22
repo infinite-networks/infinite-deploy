@@ -149,7 +149,7 @@ class InfiniteDeploy
 
     public function remoteSudo(SFTP $session, $script): void
     {
-        $command = sprintf('echo %s | sudo -kS bash -c %s', escapeshellarg($this->remotePassword), escapeshellarg($script));
+        $command = sprintf("echo %s | sudo -kSp '[sudo] Automatically entering password\n' bash -c %s", escapeshellarg($this->remotePassword), escapeshellarg($script));
         $output = $session->exec($command, $this->verbose ? function ($line) { echo $line; } : null);
         if ($session->getExitStatus()) {
             if (!$this->verbose) { fwrite(STDERR, $output); }
