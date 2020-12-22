@@ -1,0 +1,19 @@
+{
+    "name": "infinite-networks/infinite-deploy",
+    "description": "Deployment tool",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jonathan McLean"
+        }
+    ],
+    "autoload": {
+        "classmap": [
+            "InfiniteDeploy.php"
+        ]
+    },
+    "require": {
+        "phpseclib/phpseclib": "^3.0",
+        "twig/twig": "^2.0 | ^3.0"
+    }
+}
