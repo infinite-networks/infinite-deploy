@@ -144,6 +144,7 @@ class InfiniteDeploy
             $session->disconnect();
             return null;
         }
+        $session->setTimeout(0);
         return $session;
     }
 
