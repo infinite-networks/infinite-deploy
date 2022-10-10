@@ -148,6 +148,61 @@ class InfiniteDeploy
         return $session;
     }
 
+    public function upload(SFTP $session, string $localFilename, ?string $remoteFilename = null): void
+    {
+        if ($remoteFilename === null) {
+            $remoteFilename = basename($localFilename);
+        }
+
+        if (!$this->quiet) {
+            $size = filesize($localFilename);
+            $startTime = microtime(true);
+            $nextCheck = $startTime;
+
+            $scaledSize = $size;
+            $scale = 0;
+            while ($scaledSize >= 1024 && $scale < 4) {
+                $scale++;
+                $scaledSize /= 1024;
+            }
+
+            $progressCallback = function ($sent, $force = false) use ($startTime, &$nextCheck, $size, $scale) {
+                if (microtime(true) < $nextCheck && !$force) {
+                    return;
+                }
+
+                $nextCheck += 1;
+                $timeTaken = microtime(true) - $startTime;
+                $barWidth = floor($sent / $size * 40);
+
+                printf(
+                    "\r[%s%s] %.2f/%.2f%s",
+                    str_repeat('=', $barWidth),
+                    str_repeat(' ', 40 - $barWidth),
+                    $sent / pow(1024, $scale),
+                    $size / pow(1024, $scale),
+                    ['B', 'kB', 'MB', 'GB', 'TB'][$scale]
+                );
+
+                if ($timeTaken >= 1) {
+                    $ss = floor($timeTaken / $sent * $size - $timeTaken);
+                    $mm = floor($ss / 60);
+                    $ss = $ss % 60;
+                    printf(" %02d:%02d remaining", $mm, $ss);
+                }
+            };
+        } else {
+            $progressCallback = null;
+        }
+
+        $session->put($localFilename, $remoteFilename, SFTP::SOURCE_LOCAL_FILE, -1, -1, $progressCallback);
+
+        if (!$this->quiet) {
+            $progressCallback($size, true);
+            echo "\n";
+        }
+    }
+
     public function remoteSudo(SFTP $session, $script): void
     {
         $command = sprintf("echo %s | sudo -kSp '[sudo] Automatically entering password\n' bash -c %s", escapeshellarg($this->remotePassword), escapeshellarg($script));
