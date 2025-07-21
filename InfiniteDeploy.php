@@ -139,7 +139,7 @@ class InfiniteDeploy
         }
         list($server, $port) = $this->config['targets'][$target]['remote'];
 
-        $session = new SFTP($server, $port);
+        $session = new SFTP($server, $port, 30);
         if (!$session->login($this->remoteUsername, $this->remotePassword)) {
             $session->disconnect();
             return null;
